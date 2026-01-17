@@ -40,4 +40,36 @@ app.get("/", async (c) => {
   return c.text("Hello Hono!");
 });
 
+app.post("/", async (c) => {
+  const payload = {
+    title: `Post ${Date.now()}`,
+    body: `Body ${Date.now()}`,
+    userId: 1,
+  };
+  logger.info("Creating post", {
+    data: { payload },
+  });
+
+  const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    logger.error("Failed to create post", {
+      data: { response: response.statusText },
+    });
+    throw new Error("Failed to create post");
+  }
+
+  const responseData = (await response.json()) as Record<string, unknown>;
+
+  logger.info("Post created", {
+    data: { responseData: responseData },
+    tag: "create-post-response",
+  });
+
+  return c.json(responseData);
+});
+
 export default app;
